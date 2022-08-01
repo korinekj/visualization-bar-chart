@@ -18,36 +18,68 @@
 //   .then((data) => {
 //     insertInHeading(data);
 //   });
-d3.json(
-  "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json"
-).then(function (data) {
-  console.log(data);
-  const svgWidth = 500,
-    svgHeight = 300;
 
-  const barWidth = svgWidth / data.data.length;
+document.addEventListener("DOMContentLoaded", function () {
+  d3.json(
+    "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json"
+  ).then(function (data) {
+    const dataset = data.data.map((element) => element[1]);
+    drawChart(dataset);
+  });
+});
+
+function drawChart(dataset) {
+  const svgWidth = 700,
+    svgHeight = 460;
+
+  const barWidth = svgWidth / dataset.length;
 
   const svg = d3
     .select("svg")
     .attr("width", svgWidth)
     .attr("height", svgHeight);
 
-  console.log(data.data);
+  // const xScale = d3
+  //   .scaleLinear()
+  //   .domain([0, d3.max(dataset)])
+  //   .range([0, svgWidth]);
+
+  const xAxisScale = d3
+    .scaleLinear()
+    .domain([0, d3.max(dataset)])
+    .range([0, svgWidth]);
+
+  const yScale = d3
+    .scaleLinear()
+    .domain([0, d3.max(dataset)])
+    .range([0, svgHeight - 60]);
+
+  const yAxisScale = d3
+    .scaleLinear()
+    .domain([0, d3.max(dataset)])
+    .range([svgHeight - 60, 0]);
+
+  const xAxis = d3.axisBottom().scale(xAxisScale);
+  const yAxis = d3.axisLeft().scale(yAxisScale);
+
+  svg.append("g").attr("transform", "translate(60, 400)").call(xAxis);
+
+  svg.append("g").attr("transform", "translate(60, 0)").call(yAxis);
 
   svg
     .selectAll("rect")
-    .data(data.data)
+    .data(dataset)
     .enter()
     .append("rect")
     .attr("y", function (d) {
-      return svgHeight - d[1] / 10;
+      return svgHeight - yScale(d);
     })
     .attr("height", function (d) {
-      return d[1];
+      return yScale(d);
     })
     .attr("width", barWidth)
     .attr("transform", function (d, i) {
       let translate = [barWidth * i, 0];
       return "translate(" + translate + ")";
     });
-});
+}
