@@ -24,58 +24,89 @@ document.addEventListener("DOMContentLoaded", function () {
     "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json"
   ).then(function (data) {
     const dataset = data.data.map((element) => element[1]);
-    drawChart(dataset);
+    drawChart(dataset, data);
   });
 });
 
-function drawChart(dataset) {
-  const svgWidth = 700,
-    svgHeight = 460;
+function drawChart(dataset, data) {
+  const margin = {
+    top: 20,
+    bottom: 20,
+    left: 50,
+    right: 50,
+  };
+
+  const svgWidth = 700;
+  const svgHeight = 460;
+
+  // const innerWidth = 700 - margin.left - margin.right;
+  // const innerHeight = 460 - margin.top - margin.bottom;
 
   const barWidth = svgWidth / dataset.length;
 
   const svg = d3
     .select("svg")
-    .attr("width", svgWidth)
-    .attr("height", svgHeight);
+    .attr("width", svgWidth + margin.left + margin.right)
+    .attr("height", svgHeight + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   // const xScale = d3
   //   .scaleLinear()
   //   .domain([0, d3.max(dataset)])
   //   .range([0, svgWidth]);
 
+  const datum = data.data.map((element) => {
+    return parseInt(element[0].substring(0, 4));
+  });
+
+  console.log(datum);
+
   const xAxisScale = d3
     .scaleLinear()
-    .domain([0, d3.max(dataset)])
+    .domain([datum[0], datum[datum.length - 1]])
     .range([0, svgWidth]);
 
   const yScale = d3
     .scaleLinear()
     .domain([0, d3.max(dataset)])
-    .range([0, svgHeight - 60]);
+    .range([0, svgHeight]);
 
   const yAxisScale = d3
     .scaleLinear()
     .domain([0, d3.max(dataset)])
-    .range([svgHeight - 60, 0]);
+    .range([svgHeight, 0]);
 
-  const xAxis = d3.axisBottom().scale(xAxisScale);
+  const xAxis = d3.axisBottom().scale(xAxisScale).tickFormat(d3.format("d"));
   const yAxis = d3.axisLeft().scale(yAxisScale);
 
-  svg.append("g").attr("transform", "translate(60, 400)").call(xAxis);
+  //x-axis
+  svg
+    .append("g")
+    .attr("id", "x-axis")
+    .attr("transform", "translate(0," + svgHeight + ")")
+    .call(xAxis);
 
-  svg.append("g").attr("transform", "translate(60, 0)").call(yAxis);
+  //y-axis
+  svg.append("g").attr("id", "y-axis").call(yAxis);
 
   svg
     .selectAll("rect")
-    .data(dataset)
+    .data(data.data)
     .enter()
     .append("rect")
+    .attr("class", "bar")
+    .attr("data-date", (d) => {
+      return d[0];
+    })
+    .attr("data-gdp", (d) => {
+      return d[1];
+    })
     .attr("y", function (d) {
-      return svgHeight - yScale(d);
+      return svgHeight - yScale(d[1]);
     })
     .attr("height", function (d) {
-      return yScale(d);
+      return yScale(d[1]);
     })
     .attr("width", barWidth)
     .attr("transform", function (d, i) {
