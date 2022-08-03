@@ -61,6 +61,7 @@ function drawChart(dataset, data) {
   });
 
   console.log(datum);
+  console.log(datum[datum.length - 1]);
 
   const xAxisScale = d3
     .scaleLinear()
@@ -90,6 +91,14 @@ function drawChart(dataset, data) {
   //y-axis
   svg.append("g").attr("id", "y-axis").call(yAxis);
 
+  // Define the div for the tooltip
+  let div = d3
+    .select(".container")
+    .append("div")
+    .attr("class", "tooltip")
+    .attr("id", "tooltip")
+    .style("opacity", 0);
+
   svg
     .selectAll("rect")
     .data(data.data)
@@ -112,5 +121,21 @@ function drawChart(dataset, data) {
     .attr("transform", function (d, i) {
       let translate = [barWidth * i, 0];
       return "translate(" + translate + ")";
+    })
+    .on("mouseover", (event, d) => {
+      console.log(d);
+
+      const x = event.pageX;
+      const y = event.pageY;
+
+      console.log(x, y);
+      div.style("opacity", 0.9);
+      div
+        .html(d[0] + "<br>" + "$" + d[1] + " Billion")
+        .style("left", x + 10 + "px")
+        .style("top", y - 60 + "px");
+    })
+    .on("mouseout", () => {
+      div.style("opacity", 0);
     });
 }

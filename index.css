@@ -10,3 +10,19 @@ h1 {
 .change__color {
   color: red;
 }
+
+.bar:hover {
+  fill: whitesmoke;
+}
+
+div.tooltip {
+  position: absolute;
+  text-align: center;
+
+  padding: 5px;
+  font: 12px sans-serif;
+  background: lightsteelblue;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+}
