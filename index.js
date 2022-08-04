@@ -36,11 +36,10 @@ function drawChart(dataset, data) {
     right: 40,
   };
 
-  const svgWidth = 800 - margin.left - margin.right;
+  const svgWidth = 700 - margin.left - margin.right;
   const svgHeight = 500 - margin.top - margin.bottom;
 
-  const barWidth = (svgWidth + 14) / dataset.length;
-  console.log(barWidth);
+  const barWidth = (svgWidth + 8) / dataset.length;
 
   const svg = d3
     .select("svg")
@@ -57,9 +56,6 @@ function drawChart(dataset, data) {
   const datum = data.data.map((element) => {
     return parseInt(element[0].substring(0, 4));
   });
-
-  console.log(datum);
-  console.log(datum[datum.length - 1]);
 
   const xAxisScale = d3
     .scaleLinear()
