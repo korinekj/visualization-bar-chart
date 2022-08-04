@@ -32,17 +32,15 @@ function drawChart(dataset, data) {
   const margin = {
     top: 20,
     bottom: 20,
-    left: 50,
-    right: 50,
+    left: 40,
+    right: 40,
   };
 
-  const svgWidth = 700;
-  const svgHeight = 460;
+  const svgWidth = 800 - margin.left - margin.right;
+  const svgHeight = 500 - margin.top - margin.bottom;
 
-  // const innerWidth = 700 - margin.left - margin.right;
-  // const innerHeight = 460 - margin.top - margin.bottom;
-
-  const barWidth = svgWidth / dataset.length;
+  const barWidth = (svgWidth + 14) / dataset.length;
+  console.log(barWidth);
 
   const svg = d3
     .select("svg")
@@ -96,7 +94,6 @@ function drawChart(dataset, data) {
     .select(".container")
     .append("div")
     .attr("class", "tooltip")
-    .attr("id", "tooltip")
     .style("opacity", 0);
 
   svg
@@ -123,17 +120,16 @@ function drawChart(dataset, data) {
       return "translate(" + translate + ")";
     })
     .on("mouseover", (event, d) => {
-      console.log(d);
-
       const x = event.pageX;
       const y = event.pageY;
 
-      console.log(x, y);
       div.style("opacity", 0.9);
       div
         .html(d[0] + "<br>" + "$" + d[1] + " Billion")
         .style("left", x + 10 + "px")
-        .style("top", y - 60 + "px");
+        .style("top", y - 60 + "px")
+        .attr("data-date", d[0])
+        .attr("id", "tooltip");
     })
     .on("mouseout", () => {
       div.style("opacity", 0);
