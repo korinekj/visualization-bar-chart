@@ -1,115 +1,84 @@
-// const xhr = new XMLHttpRequest();
-// xhr.open(
-//   "GET",
-//   "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json",
-//   true
-// );
-// xhr.send();
-// xhr.onload = function () {
-//   const json = JSON.parse(xhr.responseText);
-//   insertInHeading(json);
-//   insertInParagraph(json);
-// };
-
-// fetch(
-//   "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json"
-// )
-//   .then((response) => response.json())
-//   .then((data) => {
-//     insertInHeading(data);
-//   });
-
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   d3.json(
     "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json"
-  ).then(function (data) {
-    const dataset = data.data.map((element) => element[1]);
-    drawChart(dataset, data);
+  ).then((data) => {
+    const dataset = data.data.map((element) => element);
+
+    drawChart(dataset);
   });
 });
 
-function drawChart(dataset, data) {
+const drawChart = (dataset) => {
+  const svg = d3.select("svg").attr("width", 700).attr("height", 500);
+
+  const width = +svg.attr("width");
+  const height = +svg.attr("height");
+
+  const yValue = (d) => d[1];
+
   const margin = {
     top: 20,
+    right: 20,
     bottom: 20,
     left: 40,
-    right: 40,
   };
 
-  const svgWidth = 700 - margin.left - margin.right;
-  const svgHeight = 500 - margin.top - margin.bottom;
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
 
-  const barWidth = (svgWidth + 8) / dataset.length;
+  const barWidth = innerWidth / dataset.length;
 
-  const svg = d3
-    .select("svg")
-    .attr("width", svgWidth + margin.left + margin.right)
-    .attr("height", svgHeight + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  const xYearStart = new Date(dataset[0][0]);
+  const xYearEnd = new Date(dataset[dataset.length - 1][0]);
 
-  // const xScale = d3
-  //   .scaleLinear()
-  //   .domain([0, d3.max(dataset)])
-  //   .range([0, svgWidth]);
-
-  const datum = data.data.map((element) => {
-    return parseInt(element[0].substring(0, 4));
-  });
-
-  const xAxisScale = d3
-    .scaleLinear()
-    .domain([datum[0], datum[datum.length - 1]])
-    .range([0, svgWidth]);
+  const xScale = d3
+    .scaleTime()
+    .domain([xYearStart, xYearEnd])
+    .range([0, innerWidth]);
+  console.log(xScale.domain());
 
   const yScale = d3
     .scaleLinear()
-    .domain([0, d3.max(dataset)])
-    .range([0, svgHeight]);
+    .domain([0, d3.max(dataset, yValue)])
+    .range([0, innerHeight]);
 
   const yAxisScale = d3
     .scaleLinear()
-    .domain([0, d3.max(dataset)])
-    .range([svgHeight, 0]);
+    .domain([0, d3.max(dataset, yValue)])
+    .range([innerHeight, 0]);
 
-  const xAxis = d3.axisBottom().scale(xAxisScale).tickFormat(d3.format("d"));
-  const yAxis = d3.axisLeft().scale(yAxisScale);
+  const xAxis = d3.axisBottom(xScale);
+  const yAxis = d3.axisLeft(yAxisScale);
 
-  //x-axis
-  svg
+  //Margin convention
+  const g = svg
     .append("g")
-    .attr("id", "x-axis")
-    .attr("transform", "translate(0," + svgHeight + ")")
-    .call(xAxis);
+    .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-  //y-axis
-  svg.append("g").attr("id", "y-axis").call(yAxis);
-
-  // Define the div for the tooltip
-  let div = d3
+  //Define the div for the tooltip
+  const div = d3
     .select(".container")
     .append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
-  svg
-    .selectAll("rect")
-    .data(data.data)
+  //Add axes
+  g.append("g")
+    .attr("id", "x-axis")
+    .attr("transform", `translate(${0}, ${innerHeight})`)
+    .call(xAxis);
+
+  g.append("g").attr("id", "y-axis").call(yAxis);
+
+  g.selectAll("rect")
+    .data(dataset)
     .enter()
     .append("rect")
     .attr("class", "bar")
-    .attr("data-date", (d) => {
-      return d[0];
-    })
-    .attr("data-gdp", (d) => {
-      return d[1];
-    })
-    .attr("y", function (d) {
-      return svgHeight - yScale(d[1]);
-    })
-    .attr("height", function (d) {
-      return yScale(d[1]);
-    })
+    .attr("data-date", (d) => d[0])
+    .attr("data-gdp", yValue)
+    .attr("y", (d) => innerHeight - yScale(yValue(d)))
+    .attr("height", (d) => yScale(yValue(d)))
     .attr("width", barWidth)
     .attr("transform", function (d, i) {
       let translate = [barWidth * i, 0];
@@ -130,4 +99,4 @@ function drawChart(dataset, data) {
     .on("mouseout", () => {
       div.style("opacity", 0);
     });
-}
+};
