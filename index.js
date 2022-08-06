@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 const drawChart = (dataset) => {
-  const svg = d3.select("svg").attr("width", 700).attr("height", 500);
+  const svg = d3.select("svg").attr("width", 900).attr("height", 500);
 
   const width = +svg.attr("width");
   const height = +svg.attr("height");
@@ -19,7 +19,7 @@ const drawChart = (dataset) => {
   const margin = {
     top: 20,
     right: 20,
-    bottom: 20,
+    bottom: 60,
     left: 40,
   };
 
@@ -28,14 +28,13 @@ const drawChart = (dataset) => {
 
   const barWidth = innerWidth / dataset.length;
 
-  const xYearStart = new Date(dataset[0][0]);
-  const xYearEnd = new Date(dataset[dataset.length - 1][0]);
-
   const xScale = d3
     .scaleTime()
-    .domain([xYearStart, xYearEnd])
+    .domain([
+      d3.min(dataset, (d) => new Date(d[0])),
+      d3.max(dataset, (d) => new Date(d[0])),
+    ])
     .range([0, innerWidth]);
-  console.log(xScale.domain());
 
   const yScale = d3
     .scaleLinear()
@@ -70,6 +69,20 @@ const drawChart = (dataset) => {
 
   g.append("g").attr("id", "y-axis").call(yAxis);
 
+  //Add text right next to y-axis
+  g.append("text")
+    .attr("x", -200)
+    .attr("y", 25)
+    .text("Gross Domestic Product")
+    .style("font-size", "1.2rem")
+    .attr("transform", "rotate(-90)");
+
+  //Add text bellow x-axis
+  g.append("text")
+    .attr("x", innerWidth - 400)
+    .attr("y", innerHeight + 50)
+    .text("More Information: http://www.bea.gov/national/pdf/nipaguid.pdf");
+
   g.selectAll("rect")
     .data(dataset)
     .enter()
@@ -77,13 +90,13 @@ const drawChart = (dataset) => {
     .attr("class", "bar")
     .attr("data-date", (d) => d[0])
     .attr("data-gdp", yValue)
+    .attr("x", (d) => {
+      return xScale(new Date(d[0]));
+    })
     .attr("y", (d) => innerHeight - yScale(yValue(d)))
     .attr("height", (d) => yScale(yValue(d)))
     .attr("width", barWidth)
-    .attr("transform", function (d, i) {
-      let translate = [barWidth * i, 0];
-      return "translate(" + translate + ")";
-    })
+    .attr("fill", "rgb(51, 173, 255)")
     .on("mouseover", (event, d) => {
       const x = event.pageX;
       const y = event.pageY;
